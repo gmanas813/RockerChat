@@ -44,8 +44,8 @@ const room = require('./models/room');
 const { compile } = require('ejs');
 mongoose.Promise = require('bluebird');
 mongoose.set('debug',true);
-const connectdb = mongoose.connect("mongodb://127.0.0.1:27017/Users?readPreference=primary&ssl=false",{useNewUrlParser:true});
-
+//const connectdb = mongoose.connect("mongodb://127.0.0.1:27017/Users?readPreference=primary&ssl=false",{useNewUrlParser:true});
+const connectdb = mongoose.connect("mongodb+srv://rocko:rockalways@rockershock-ptdgc.mongodb.net/test?retryWrites=true&w=majority",{useNewUrlParser:true});
 
 app.get('/',async function(req,res){
  try{
