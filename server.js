@@ -380,6 +380,7 @@ app.post("/login",passport.authenticate("local", { failureRedirect: '/login' })
 
 app.get("/logout",isloggedin,function(req,res){
 req.logout();
+usernamee="";
 res.redirect("/");
 }) ;
 
