@@ -35,7 +35,7 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 const port=3000 || process.env.PORT;
-const server = app.listen(process.env.PORT);
+const server = app.listen(3000);
 const io = socketio(server);
 var usernamee="";
 var curRoom="";
@@ -218,18 +218,18 @@ if(ct>0)
 
 // create alias
 
-app.get('/alias',function(req,res){
-  res.render('alias.ejs');
-});
 
 app.post('/alias',function(req,res){
   const name=req.body.username;
+  const user=usernamee;
   Rooom.find({roomTitle:curRoom},function(err,rom){
     const room = rom[0];
     if(usernamee==room.username && !room.alias.includes(name))
     room.alias.push(name);
     room.save();
-  })
+    usernamee=user;
+  });
+  usernamee=user;
   res.redirect('/chat');
 })
 
