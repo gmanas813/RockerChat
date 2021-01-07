@@ -10,10 +10,18 @@
                 <a href="/">Account</a>
             </li>
             <li class="nav-item">
-                <a href='/create'>Create Room   </a>
+                <a href='#' class='newr'>Create Room   </a>
+                <form action='/create' method="POST" class="roomform" style="display: none;">
+                    <input type='text' name='roomTitle'>
+                    <input type="submit">
+                </form>
             </li>
             <li class="nav-item">
-                <a href="/alias">Add alias</a>
+                <a href="#" class="newa">Add alias</a>
+                <form action='/alias' method="POST" class="aliasform" style="display: none;">
+                    <input type='text' name='username'>
+                    <input type="submit">
+                </form>
             </li>
            
           </ul>
@@ -21,6 +29,8 @@
       </nav>
     <div class="row">
         <div class="col-sm-1 namespaces" id="app">
+
+            
         </div>
         <div class="col-sm-2 rooms">
            
@@ -31,7 +41,8 @@
         </div>
         <div class="chat-panel col-sm-7">
             <div class="room-header row col-6">
-                <div class="col-sm-3"><span class="curr-room-text">Current Room</span> </div>
+                <div class="col-sm-3"><span class="curr-room-text editr">Current Room</span> </div>
+               
                
             </div> 
             <div class="message-form" style="margin-top: 20px;">

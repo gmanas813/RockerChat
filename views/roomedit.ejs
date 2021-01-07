@@ -14,18 +14,23 @@
         
         <!--Fontawesome CDN-->
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
-        <link rel="stylesheet" type="text/css" href="./room.css">
-      
+       
     </head>
-    <body>
+    <body style="background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
       
-        <div class="container">
-            <h4>Add Alias</h4>
-            <form action='/alias' method="POST">
-                <input type='text' name='username'>
-                <input type="submit">
+        <div class="container" style="    text-align: center;
+        margin-top: 268px;">
+            <h4>Edit</h4>
+            
+            <form action='/room/<%=roomName %>?_method=PUT' method="POST">
+              <input name='roomName'>
+              <button type="submit" style="background-color: white;">Update</button>
             </form>
-            <a href='/chat'>Back to Chat</a>
+            <form action='/rooms/<%=roomName %>?_method=DELETE' method="POST">
+                <button style="background-color: white;">Delete</button>
+              </form>
+            <a href='/chat' style="color: firebrick;
+            font-size: 30px;">Back to Chat</a>
         </div>
         </body>
     </html>

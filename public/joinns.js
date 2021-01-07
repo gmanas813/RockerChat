@@ -46,11 +46,27 @@ function joinns(endpoint){
         nsSocket.emit('newmessagetoserver',{ msg: newmsg, sender_id: 'YOUR USER ID' });
     }
 
-    function buildHTML(msg){
+    function buildHTML(msg,dp){
         const date = new Date(msg.time).toLocaleString();
         const newHTML = `<li> <div class="user-message"> <div class="time-message">${msg.username} <span>${date}</span> </div>
-        <div class="message-text"> ${msg.msg} </div> </div>
+        <div class="message-text"> ${msg.msg}
+        
+   
+        
+        </div>
+        <div class='update' style='display:${dp}'>
+        <form action="/chats/${msg._id}?_method=PUT" method="POST" >
+        <input name='msg'>
+        <button style='margin-top:10px; background-color:white; width:65px'> Update </button>
+        </form>
+        <form action="/chat/${msg._id}?_method=DELETE" method="POST">
+        <button class='frdlt' style='background-color:white; width:65px'> Delete </button>
+        </form>
+        </div>
+        </div>
         </li> 
         `;
         return newHTML;
     }
+
+

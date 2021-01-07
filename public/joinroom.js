@@ -1,39 +1,83 @@
+
+
+
 function joinroom (roomName) {
-    document.querySelector('.curr-room-text').innerText=`${roomName}`;
+   // document.querySelector('.curr-room-text').innerText=`${roomName}`;
     nsSocket.emit('joinroom',roomName,(Member)=>{
         console.log(Member);
-        document.querySelector('.curr-room-text').innerHTML = `${roomName}`;
+        var x =document.querySelector('.curr-room-text');
+        x.innerHTML='';
+        console.log(roomName);
+        x.innerHTML+= `<div> <span class='rmtitle'> ${roomName}</span> <a class='rmedit' href='room/${roomName}'> EDIT </a> </div>`;
     });
     nsSocket.once('historycatchup',(data)=>{
 
-   console.log('Called Room');
+        console.log(roomName);
        const history=data.data;
        const chat=data.chat;
+       const name=data.user;
+       const owner=data.owner;
        const aliases=data.alias;
         const messagesUl = document.querySelector('#messages');
         messagesUl.innerHTML="";
-        
+        console.log(history);
+        if(name==owner){
+          var x = document.querySelector('.newa');
+          x.style.display='inline';
+        }
+        else{
+            var x = document.querySelector('.newa');
+          x.style.display='none';
+        }
         history.forEach((msg)=>{
-            const newMsg = buildHTML(msg);
+            var dp='none';
+            if(name==msg.username || name==owner){
+                dp='block';
+            }
+
+            const newMsg = buildHTML(msg,dp);
             messagesUl.innerHTML+=newMsg;
         })
         chat.forEach((msg)=>{
-            const newMsg = buildHTML(msg);
+            var dp='none';
+            if(name==msg.username || name==owner){
+                dp='block';
+            }
+            const newMsg = buildHTML(msg,dp);
             messagesUl.innerHTML+=newMsg;
-        })
+        });
+  
+        
         const friendUl=document.querySelector('.friend-list');
         friendUl.innerHTML="";
         aliases.forEach((friend)=>{
-          
-            friendUl.innerHTML+=`<li class='friend'>${friend}</li>`
+            var dp='none';
+            var wd='29px';
+            if(friend==name || name==owner){
+                dp='block';
+                wd='0px';
+            }
+            if(friend==owner) {dp='none'; wd='29px'; }
+            friendUl.innerHTML+=`
+            <li class='friend'>
+            <form action='/alias/${friend}?_method=DELETE' method='POST'>
+            <button style='display:${dp}' class='frdlt'> &#10006;     </button>
+            </form>
+            <span style='margin-left:${wd}'>
+            ${friend}</span></li>`
         });
         messagesUl.scrollTo(0,messagesUl.scrollHeight);
     });
     nsSocket.on('updatemembers',(numMembers)=>{
     //    console.log(numMembers,'s');
-        document.querySelector('.curr-room-num-users').innerHTML = `${numMembers}<span class='icon'></span>`;
-        document.querySelector('.curr-room-text').innerText = `${roomName}`;
+    var x =document.querySelector('.curr-room-text');
+    x.innerHTML='';
+    x.innerHTML+= `<div> <span class='rmtitle'> ${roomName}</span> <a class='rmedit' href='room/${roomName}'> EDIT </a></div>`;     
+    console.log(roomName);
+     //   document.querySelector('.curr-room-text').innerText = `${roomName}`;
     });
+
+  
     
 
 }

@@ -6,7 +6,7 @@ var bodyparser=require("body-parser");
 var User=require("./models/user.js");
 var Rooom = require("./models/room");
 var Chat = require("./models/chat");
-var Q=require('q');
+var methodOverride = require('method-override');
 var NS=require("./models/namespace");
 const app=express();
 const path  = require('path');
@@ -15,7 +15,7 @@ const socketio = require('socket.io');
 app.use(express.static(__dirname+'/public'));
 app.use(bodyparser.urlencoded({extended:true}));
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(methodOverride("__method"));
 app.use(require("express-session")({
   secret: "Rusty is the best and cutest dog in the world",
   resave: false,
@@ -35,7 +35,7 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 const port=3000 || process.env.PORT;
-const server = app.listen( process.env.PORT);
+const server = app.listen(3000);
 const io = socketio(server);
 var usernamee="";
 var curRoom="";
@@ -45,8 +45,8 @@ const room = require('./models/room');
 const { compile } = require('ejs');
 mongoose.Promise = require('bluebird');
 mongoose.set('debug',true);
-//const connectdb = mongoose.connect("mongodb://127.0.0.1:27017/Users?readPreference=primary&ssl=false",{useNewUrlParser:true});
-const connectdb = mongoose.connect("mongodb+srv://rocko:rockalways@rockershock-ptdgc.mongodb.net/Users?retryWrites=true&w=majority",{useNewUrlParser:true});
+const connectdb = mongoose.connect("mongodb://127.0.0.1:27017/Users?readPreference=primary&ssl=false",{useNewUrlParser:true});
+//const connectdb = mongoose.connect("mongodb+srv://rocko:rockalways@rockershock-ptdgc.mongodb.net/Users?retryWrites=true&w=majority",{useNewUrlParser:true});
 
 app.get('/',async function(req,res){
  try{
@@ -128,7 +128,10 @@ app.get('/chat',isloggedin,async function(req,res){
            if(friends.includes(usernamee)==false){
              friends.push(usernamee);
            }
-           nsSocket.emit('historycatchup',{data:chatData,chat:chat,alias:friends});
+           if(friends.includes(nsRoom.username)==false){
+            friends.push(nsRoom.username);
+          }
+           nsSocket.emit('historycatchup',{data:chatData,chat:chat,alias:friends,user:usernamee,owner:nsRoom.username});
       
            updateUsers(namespace,roomName);
       }
@@ -158,6 +161,7 @@ app.get('/chat',isloggedin,async function(req,res){
 
          io.of(namespace.endpoint).to(roomTitle).emit('messagetoclient',fullmsg);
      //   nsSocket.broadcast.emit('messagetoclient',msg);
+  
         }
         }) 
          
@@ -174,7 +178,7 @@ app.get('/chat',isloggedin,async function(req,res){
   catch (err){
     console.log(err);
   }
-  res.sendFile(__dirname + '/public/chat.html');
+  res.render('chat.ejs');
 });
 
 
@@ -229,11 +233,112 @@ app.post('/alias',function(req,res){
   res.redirect('/chat');
 })
 
+// removing alias
+
+app.post('/alias/:user',function(req,res){
+    const user=req.params.user;
+    Rooom.find({roomTitle:curRoom},function(err,rom){
+      if(!err){
+        const room=rom[0];
+        if(room.username!=user){
+          var i= room.alias.indexOf(user);
+      room.alias.splice(i,1);
+      room.save();
+        }
+      }
+    })
+    res.redirect('/chat');
+})
+
+// edit room
+
+app.get('/room/:roomName',function(req,res){
+
+  res.render('roomedit.ejs',{roomName:req.params.roomName});
+})
+
+
+app.post('/room/:roomName',function(req,res){
+  var newName=req.body.roomName;
+  var old = req.params.roomName;
+  Rooom.find({roomTitle:old},function(err,rom){
+    if(!err){
+    const room=rom[0];
+
+    room.roomTitle=newName;
+    room.save();
+    }
+  });
+ res.redirect('/chat');
+})
+
+app.post('/rooms/:roomName',function(req,res){
+console.log(req.params.roomName);
+  Rooom.find({roomTitle:req.params.roomName},function(err,rom){
+    if(!err){
+    const room=rom[0];
+    console.log(room);
+     if(room){
+  Rooom.findByIdAndRemove(room._id,function(err){
+    if(!err){
+
+      NS.find({nsTitle:'Sample'},function(err,nss){
+        const ns=nss[0];
+        var i= ns.rooms.indexOf(room._id);
+      ns.rooms.splice(i,1);
+      ns.save();
+      })
+    }
+  })
+}
+    }
+  });
+ 
+ res.redirect('/chat');
+})
 
 function updateUsers(namespace,roomName){
 var numClients=3;
 io.of(namespace.endpoint).in(roomName).emit('updatemembers',numClients);
 }
+
+// deleting and updating messages
+
+app.post('/chat/:id',function(req,res){
+  console.log(req.params.id);
+  if(req.params.id){
+  Chat.findByIdAndRemove(req.params.id,function(err){
+    if(err){
+      console.log(err);
+    }
+
+  })
+  Rooom.find({roomTitle:curRoom},function(err,rom){
+    if(!err){
+      const room=rom[0];
+      var i= room.data.indexOf(req.params.id);
+      room.data.splice(i,1);
+      room.save();
+    }
+  })
+}
+res.redirect('/chat');
+});
+
+app.post('/chats/:id',function(req,res){
+  const mid=req.params.id;
+  const msg=req.body.msg;
+  const fullmsg={
+    msg:msg, time:Date.now(), username:usernamee
+  };
+  Chat.findByIdAndUpdate(mid,fullmsg,function(err){
+    if(!err){
+      res.redirect('/chat');
+    }
+  })
+})
+
+
 //  auth part
 
 app.get("/register",function(req, res) {
