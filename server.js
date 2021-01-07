@@ -35,7 +35,7 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 const port=3000 || process.env.PORT;
-const server = app.listen(3000);
+const server = app.listen(process.env.PORT);
 const io = socketio(server);
 var usernamee="";
 var curRoom="";
@@ -45,8 +45,8 @@ const room = require('./models/room');
 const { compile } = require('ejs');
 mongoose.Promise = require('bluebird');
 mongoose.set('debug',true);
-const connectdb = mongoose.connect("mongodb://127.0.0.1:27017/Users?readPreference=primary&ssl=false",{useNewUrlParser:true});
-//const connectdb = mongoose.connect("mongodb+srv://rocko:rockalways@rockershock-ptdgc.mongodb.net/Users?retryWrites=true&w=majority",{useNewUrlParser:true});
+//const connectdb = mongoose.connect("mongodb://127.0.0.1:27017/Users?readPreference=primary&ssl=false",{useNewUrlParser:true});
+const connectdb = mongoose.connect("mongodb+srv://rocko:rockalways@rockershock-ptdgc.mongodb.net/Users?retryWrites=true&w=majority",{useNewUrlParser:true});
 
 app.get('/',async function(req,res){
  try{
