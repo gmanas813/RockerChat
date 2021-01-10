@@ -32,7 +32,7 @@ function joinroom (roomName,userr) {
         }
         history.forEach((msg)=>{
             var dp='none';
-            if(name==msg.username || name==owner){
+            if(name==msg.username){
                 dp='block';
             }
             var sendu=msg.username;
@@ -42,7 +42,7 @@ function joinroom (roomName,userr) {
         })
         chat.forEach((msg)=>{
             var dp='none';
-            if(name==msg.username || name==owner){
+            if(name==msg.username){
                 dp='block';
             }
             var sendu=msg.username;
