@@ -35,9 +35,9 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 const port=3000 || process.env.PORT;
-const server = app.listen(process.env.PORT);
+const server = app.listen(3000);
 const io = socketio(server);
-var usernamee="";
+
 var curRoom="";
 var mongoose = require('mongoose');
 const Room = require('./helper/room.js');
@@ -45,8 +45,8 @@ const room = require('./models/room');
 const { compile } = require('ejs');
 mongoose.Promise = require('bluebird');
 mongoose.set('debug',true);
-//const connectdb = mongoose.connect("mongodb://127.0.0.1:27017/Users?readPreference=primary&ssl=false",{useNewUrlParser:true});
-const connectdb = mongoose.connect("mongodb+srv://rocko:rockalways@rockershock-ptdgc.mongodb.net/Users?retryWrites=true&w=majority",{useNewUrlParser:true});
+const connectdb = mongoose.connect("mongodb://127.0.0.1:27017/Users?readPreference=primary&ssl=false",{useNewUrlParser:true});
+//const connectdb = mongoose.connect("mongodb+srv://rocko:rockalways@rockershock-ptdgc.mongodb.net/Users?retryWrites=true&w=majority",{useNewUrlParser:true});
 
 app.get('/',async function(req,res){
  try{
@@ -72,13 +72,13 @@ app.get('/',async function(req,res){
      socket.emit('nslist',nsData);
      });
 
-app.get('/chat',isloggedin,async function(req,res){
+app.get('/:user/chat',isloggedin,async function(req,res){
  // console.log('AGAIn');
   try{
     namespaces=await NS.find({});
    
     if(namespaces){    namespaces.forEach(async (namespace)=>{
-         const username = usernamee;
+         const username = req.params.user;
          const rooms= namespace.rooms;
          let roomss=[];
          let Chats ={};
@@ -87,7 +87,7 @@ app.get('/chat',isloggedin,async function(req,res){
            // const room = rom[0];
 
        
-           if(room.username==usernamee || room.alias.includes(usernamee) ){
+           if(room.username==username || room.alias.includes(username) ){
             roomss.push(room);
             Chats[room.roomTitle]=[];
             room.data.forEach(chatid=>{
@@ -107,7 +107,7 @@ app.get('/chat',isloggedin,async function(req,res){
       
         //  var roomss= Roomlist['Sample'];
          
-         nsSocket.emit('nsroomload',roomss);
+         nsSocket.emit('nsroomload',{rmd:roomss,user:username});
   
          nsSocket.on('joinroom',(roomName,Member)=>{
            
@@ -125,13 +125,13 @@ app.get('/chat',isloggedin,async function(req,res){
            let chat= chatList[nsRoom.roomTitle];
            let chatData = Chats[nsRoom.roomTitle];
            let friends= nsRoom.alias;
-           if(friends.includes(usernamee)==false){
-             friends.push(usernamee);
+           if(friends.includes(username)==false){
+             friends.push(username);
            }
            if(friends.includes(nsRoom.username)==false){
             friends.push(nsRoom.username);
           }
-           nsSocket.emit('historycatchup',{data:chatData,chat:chat,alias:friends,user:usernamee,owner:nsRoom.username});
+           nsSocket.emit('historycatchup',{data:chatData,chat:chat,alias:friends,user:username,owner:nsRoom.username});
       
            updateUsers(namespace,roomName);
       }
@@ -178,17 +178,15 @@ app.get('/chat',isloggedin,async function(req,res){
   catch (err){
     console.log(err);
   }
-  res.render('chat.ejs');
+  res.render('chat.ejs',{user:req.params.user});
 });
 
 
 // room create
 
-app.get('/create',function(req,res){
-  res.render('createroom.ejs');
-})
 
-app.post('/create',function(req,res){
+
+app.post('/:user/create',function(req,res){
   const rmTtitle = req.body.roomTitle;
  var ct = Rooom.countDocuments({roomTitle:rmTtitle}).limit(1);
 if(ct>0)
@@ -198,7 +196,7 @@ if(ct>0)
     roomTitle:rmTtitle,
     roomId:1,
     namespace:'Sample',
-    username:usernamee,
+    username:req.params.user,
     data:[]
   },function(err,room){
     if(!err){
@@ -213,29 +211,29 @@ if(ct>0)
   });
   chatList[rmTtitle]=[];
  }
-  res.redirect('/chat');
+  res.redirect(`/${req.params.user}/chat`);
 })
 
 // create alias
 
 
-app.post('/alias',function(req,res){
+app.post('/:user/alias',function(req,res){
   const name=req.body.username;
-  const user=usernamee;
+  const user=req.params.user;
   Rooom.find({roomTitle:curRoom},function(err,rom){
     const room = rom[0];
-    if(usernamee==room.username && !room.alias.includes(name))
+    if(user==room.username && !room.alias.includes(name))
     room.alias.push(name);
     room.save();
-    usernamee=user;
+  
   });
-  usernamee=user;
-  res.redirect('/chat');
+  
+  res.redirect(`/${req.params.user}/chat`);
 })
 
 // removing alias
 
-app.post('/alias/:user',function(req,res){
+app.post('/:us/alias/:user',function(req,res){
     const user=req.params.user;
     Rooom.find({roomTitle:curRoom},function(err,rom){
       if(!err){
@@ -247,18 +245,18 @@ app.post('/alias/:user',function(req,res){
         }
       }
     })
-    res.redirect('/chat');
+    res.redirect(`/${req.params.us}chat`);
 })
 
 // edit room
 
-app.get('/room/:roomName',function(req,res){
+app.get('/:user/room/:roomName',function(req,res){
 
-  res.render('roomedit.ejs',{roomName:req.params.roomName});
+  res.render('roomedit.ejs',{roomName:req.params.roomName,user:req.params.user});
 })
 
 
-app.post('/room/:roomName',function(req,res){
+app.post('/:user/room/:roomName',function(req,res){
   var newName=req.body.roomName;
   var old = req.params.roomName;
   Rooom.find({roomTitle:old},function(err,rom){
@@ -269,10 +267,10 @@ app.post('/room/:roomName',function(req,res){
     room.save();
     }
   });
- res.redirect('/chat');
+  res.redirect(`/${req.params.user}/chat`);
 })
 
-app.post('/rooms/:roomName',function(req,res){
+app.post('/:user/rooms/:roomName',function(req,res){
 console.log(req.params.roomName);
   Rooom.find({roomTitle:req.params.roomName},function(err,rom){
     if(!err){
@@ -294,7 +292,7 @@ console.log(req.params.roomName);
     }
   });
  
- res.redirect('/chat');
+  res.redirect(`/${req.params.user}/chat`);
 })
 
 function updateUsers(namespace,roomName){
@@ -304,7 +302,7 @@ io.of(namespace.endpoint).in(roomName).emit('updatemembers',numClients);
 
 // deleting and updating messages
 
-app.post('/chat/:id',function(req,res){
+app.post('/:user/chat/:id',function(req,res){
   console.log(req.params.id);
   if(req.params.id){
   Chat.findByIdAndRemove(req.params.id,function(err){
@@ -322,18 +320,18 @@ app.post('/chat/:id',function(req,res){
     }
   })
 }
-res.redirect('/chat');
+res.redirect(`/${req.params.user}/chat`);
 });
 
-app.post('/chats/:id',function(req,res){
+app.post('/:user/chats/:id',function(req,res){
   const mid=req.params.id;
   const msg=req.body.msg;
   const fullmsg={
-    msg:msg, time:Date.now(), username:usernamee
+    msg:msg, time:Date.now(), username:req.params.user
   };
   Chat.findByIdAndUpdate(mid,fullmsg,function(err){
     if(!err){
-      res.redirect('/chat');
+      res.redirect(`/${req.params.user}/chat`);
     }
   })
 })
@@ -356,10 +354,10 @@ User.register(newUser, req.body.password,async function(err, user){
        console.log(err);
        return res.render("register.ejs");
    }
-   usernamee=req.body.username ;
+ 
 
    passport.authenticate("local")(req, res, function(){
-     res.redirect("/chat"); 
+    res.redirect(`/${req.body.username}/chat`); 
    }); 
 });
 });
@@ -373,14 +371,12 @@ app.post("/login",passport.authenticate("local", { failureRedirect: '/login' })
 // successRedirect : "/",
 // failureRedirect : "/login"
 ,function(req,res){
-  usernamee=req.body.username ;
-
-  res.redirect('/chat');
+  res.redirect(`/${req.body.username}/chat`); 
 });
 
 app.get("/logout",isloggedin,function(req,res){
 req.logout();
-usernamee="";
+
 res.redirect("/");
 }) ;
 

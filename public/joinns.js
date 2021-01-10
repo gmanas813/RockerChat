@@ -7,8 +7,12 @@ function joinns(endpoint){
     }
     nsSocket = io(endpoint);
  //   console.log(nsSocket);
-    nsSocket.on('nsroomload',(nsRooms)=>{
-     
+
+    nsSocket.on('nsroomload',(obj)=>{
+        console.log(obj);
+     const nsRooms=obj.rmd;
+    const userr=obj.user;
+    console.log(userr);
         let roomList = document.querySelector('.room-list');
      
         roomList.innerHTML='';
@@ -21,21 +25,19 @@ function joinns(endpoint){
         let roomNodes= document.getElementsByClassName('room');
         Array.from(roomNodes).forEach((element)=>{
             element.addEventListener('click',(e)=>{
-                joinroom(e.target.innerText);
+                joinroom(e.target.innerText,userr);
             })
         })
 
         const toproom = document.querySelector('.room');
 //        console.log(toproom);
        const roomname = toproom.innerText;
-       joinroom(roomname);
+       joinroom(roomname,userr);
     });
     nsSocket.on('messagetoclient',(msg)=>{
   //     console.log(msg);
         const newmsg=buildHTML(msg);
-        document.querySelector('#messages').innerHTML+=newmsg;
-       
-      
+        document.querySelector('#messages').innerHTML+=newmsg;     
     })
     document.querySelector('.message-form').addEventListener('submit',formsub);
 }  
@@ -46,7 +48,8 @@ function joinns(endpoint){
         nsSocket.emit('newmessagetoserver',{ msg: newmsg, sender_id: 'YOUR USER ID' });
     }
 
-    function buildHTML(msg,dp){
+    function buildHTML(msg,dp,user){
+        console.log(msg.username);
         const date = new Date(msg.time).toLocaleString();
         const newHTML = `<li> <div class="user-message"> <div class="time-message">${msg.username} <span>${date}</span> </div>
         <div class="message-text"> ${msg.msg}
@@ -55,11 +58,11 @@ function joinns(endpoint){
         
         </div>
         <div class='update' style='display:${dp}'>
-        <form action="/chats/${msg._id}?_method=PUT" method="POST" >
-        <input name='msg'>
+        <form action="/${msg.username}/chats/${msg._id}?_method=PUT" method="POST" >
+        <input name='msg'/>
         <button style='margin-top:10px; background-color:white; width:65px'> Update </button>
         </form>
-        <form action="/chat/${msg._id}?_method=DELETE" method="POST">
+        <form action="/${msg.username}/chat/${msg._id}?_method=DELETE" method="POST">
         <button class='frdlt' style='background-color:white; width:65px'> Delete </button>
         </form>
         </div>

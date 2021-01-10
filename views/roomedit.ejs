@@ -22,11 +22,11 @@
         margin-top: 268px;">
             <h4>Edit</h4>
             
-            <form action='/room/<%=roomName %>?_method=PUT' method="POST">
+            <form action='/room/<%=roomName %>/<%= user %>?_method=PUT' method="POST">
               <input name='roomName'>
               <button type="submit" style="background-color: white;">Update</button>
             </form>
-            <form action='/rooms/<%=roomName %>?_method=DELETE' method="POST">
+            <form action='/rooms/<%= roomName %>/<%= user %>?_method=DELETE' method="POST">
                 <button style="background-color: white;">Delete</button>
               </form>
             <a href='/chat' style="color: firebrick;
