@@ -138,7 +138,7 @@ app.get('/:user/chat',isloggedin,async function(req,res){
       }
          })
          
-        nsSocket.on('newmessagetoserver',(data)=>{
+        nsSocket.on('newmessagetoserver',async (data)=>{
           const msg = data.msg;
          const fullmsg ={
           msg:msg, time:Date.now(), username:username
@@ -149,7 +149,7 @@ app.get('/:user/chat',isloggedin,async function(req,res){
          if(nsRoom){
          chatList[nsRoom.roomTitle].push(fullmsg);
          //console.log(chatList[nsRoom.roomId]);
-         Rooom.find({'roomTitle':roomTitle}).then(room=>{
+       await Rooom.find({'roomTitle':roomTitle}).then(room=>{
            Chat.create({
             msg:msg, time:Date.now(), username:username
            },function(err,chat){
@@ -162,7 +162,7 @@ app.get('/:user/chat',isloggedin,async function(req,res){
 
          io.of(namespace.endpoint).to(roomTitle).emit('messagetoclient',fullmsg);
      //   nsSocket.broadcast.emit('messagetoclient',msg);
-       res.redirect(`/${req.params.user}/chat`);
+     //  res.redirect(`/${req.params.user}/chat`);
         }
         }) 
          

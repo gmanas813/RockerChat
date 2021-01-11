@@ -30,6 +30,7 @@ function joinroom (roomName,userr) {
             var x = document.querySelector('.newa');
           x.style.display='none';
         }
+        history.sort((a,b)=>(a.time>b.time) ? 1: -1 );
         history.forEach((msg)=>{
             var dp='none';
             if(name==msg.username){

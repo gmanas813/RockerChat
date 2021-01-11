@@ -51,6 +51,7 @@ function joinns(endpoint){
     function buildHTML(msg,dp,user){
         console.log(msg.username);
         const date = new Date(msg.time).toLocaleString();
+        if(msg._id==undefined) dp='none';
         const newHTML = `<li> <div class="user-message"> <div class="time-message">${msg.username} <span>${date}</span> </div>
         <div class="message-text"> ${msg.msg}
         
