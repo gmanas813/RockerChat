@@ -35,8 +35,8 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 const port=3000 || process.env.PORT;
-//const server = app.listen(process.env.PORT);
-const server = app.listen(3000);
+const server = app.listen(process.env.PORT);
+//const server = app.listen();
 const io = socketio(server);
 
 var curRoom="";
