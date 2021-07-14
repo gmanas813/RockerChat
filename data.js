@@ -5,8 +5,9 @@ NS.find({}).then( ns=> {
 
    ns[0].rooms.map(rm=>{
       Rooom.findById(rm).then( room=> {
-        chatList[room.roomTitle]=[];
+       if(room){ chatList[room.roomTitle]=[];}
         return room});
+       
   })
  
 });

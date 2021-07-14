@@ -9,7 +9,7 @@ function joinroom (roomName,userr) {
         var x =document.querySelector('.curr-room-text');
         x.innerHTML='';
         console.log(roomName);
-        x.innerHTML+= `<div> <span class='rmtitle'> ${roomName}</span> <a class='rmedit' href='${userr}/room/${roomName}'> EDIT </a> </div>`;
+        x.innerHTML+= `<div> <span class='rmtitle'> ${roomName}</span> <a class='rmedit' href='room/${roomName}'> EDIT </a> </div>`;
     });
     nsSocket.once('historycatchup',(data)=>{
 

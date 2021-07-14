@@ -35,8 +35,8 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 const port=3000 || process.env.PORT;
-const server = app.listen(process.env.PORT);
-//const server = app.listen(3000);
+//const server = app.listen(process.env.PORT);
+const server = app.listen(3000);
 const io = socketio(server);
 
 var curRoom="";
@@ -113,6 +113,14 @@ app.get('/:user/chat',isloggedin,async function(req,res){
          nsSocket.on('joinroom',(roomName,Member)=>{
            
            const roomArray = Array.from(nsSocket.rooms);
+           console.log("Join");
+           console.log(roomArray[0]);
+             console.log(roomArray[1]);
+          //  roomArray.forEach(function(i){
+             
+             
+            
+          //  });
            const roomLeave= roomArray[1];
            
       
@@ -246,12 +254,12 @@ app.post('/:us/alias/:user',function(req,res){
         }
       }
     })
-    res.redirect(`/${req.params.us}chat`);
+    res.redirect(`/${req.params.us}/chat`);
 })
 
 // edit room
 
-app.get('/:user/room/:roomName',function(req,res){
+app.get('/:user/:user/room/:roomName',function(req,res){
 
   res.render('roomedit.ejs',{roomName:req.params.roomName,user:req.params.user});
 })
@@ -262,6 +270,9 @@ app.post('/:user/room/:roomName',function(req,res){
   var old = req.params.roomName;
   Rooom.find({roomTitle:old},function(err,rom){
     if(!err){
+      rom.forEach(function(i){
+        console.log(i);
+      });
     const room=rom[0];
 
     room.roomTitle=newName;
